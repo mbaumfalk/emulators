@@ -1,0 +1,23 @@
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<title>CHIP-8</title>
+		<script src="wasm_exec.js" defer></script>
+		<script src="wasm.js" defer></script>
+		<style>
+		 #screen {
+			 image-rendering: pixelated;
+			 image-rendering: crisp-edges;
+			 width: 90%;
+		 }
+		</style>
+	</head>
+	<body>
+		<canvas id="screen" width="64" height="32"></canvas><br>
+		<input type="file" id="file" onchange="uploadRom()"><br>
+		<input type="button" value="Reset" onClick="reset()">
+		<input type="button" value="Pause" onClick="window.clearInterval(gameInterval)">
+		<input type="button" value="Play" onClick="play()">
+		<input type="button" value="Step Frame" onClick="runFrame()">
+	</body>
+</html>
