@@ -12,6 +12,11 @@ document.onkeydown = obj => keyEvent(obj, true);
 document.onkeyup = obj => keyEvent(obj, false);
 const keys = [88, 49, 50, 51, 81, 87, 69, 65, 83, 68, 90, 67, 52, 82, 70, 86];
 
+const roms = ["15PUZZLE", "BLINKY", "BLITZ", "BRIX", "CONNECT4", "GUESS", "HIDDEN", "INVADERS", "KALEID", "MAZE", "MERLIN", "MISSLE", "PONG", "PONG2", "PUZZLE", "SYZYGY", "TANK", "TETRIS", "TICTAC", "UFO", "VBRIX", "VERS", "WIPEOFF"];
+const fileElement = document.createElement("input");
+fileElement.setAttribute("type", "file");
+fileElement.onchange = fileRom;
+
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audio = new AudioContext();
 
@@ -76,12 +81,15 @@ function play() {
 function reset() {
     pause();
     wasm.exports.loadRom();
+    document.getElementById("gameList").className = "hidden";
+    document.getElementById("game").className = "";
     play();
 }
 
-function loadRom() {
+function loadRom(romPath) {
     window.clearInterval(gameInterval);
-    fetch(romPath).then(
+
+    fetch("../chip8-games/" + romPath).then(
         resp => resp.status == 200 ? resp.body.getReader() : undefined
     ).then(
         reader => reader.read()
@@ -91,14 +99,19 @@ function loadRom() {
     });
 }
 
-function uploadRom() {
+function fileRom() {
     window.clearInterval(gameInterval);
 
-    const fileElement = document.getElementById("file");
     fileElement.files[0].stream().getReader().read().then(obj => {
         rom = obj.value;
         reset();
     });
+}
+
+function chooseRom() {
+    pause();
+    document.getElementById("game").className = "hidden";
+    document.getElementById("gameList").className = "";
 }
 
 function keyEvent(obj, down) {
@@ -115,10 +128,26 @@ function init() {
     WebAssembly.instantiateStreaming(fetch("chip8-tiny.wasm"), go.importObject).then(obj => {
         wasm = obj.instance;
         go.run(wasm);
+        loadRom("INVADERS");
     });
 
     clear();
     ctx.putImageData(new ImageData(pixels, 64, 32), 0, 0);
+
+    const games = document.getElementById("gameList");
+    const load = document.createElement("input");
+    load.type = "button";
+    load.onclick = () => fileElement.click();
+    load.value = "Load ROM from your computer";
+    games.appendChild(load);
+    for (const rom of roms) {
+        const element = document.createElement("input");
+        element.type = "button";
+        element.onclick = () => loadRom(rom);
+        element.value = rom;
+        games.appendChild(document.createElement("br"));
+        games.appendChild(element);
+    }
 }
 
 init();
